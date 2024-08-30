@@ -1,4 +1,6 @@
 # keycloak-with-rabbitmq
+Here the keycloak-with-rabbitmq service implements EvenlistenerProvider spi and RabbitMQRecv acts as a consumer.
+The docker-compose.yml have all the set up to run all the services along with rabbitmq.
 Just open the terminal and run the following command (for ubuntu):
 ./deploy.sh
 
