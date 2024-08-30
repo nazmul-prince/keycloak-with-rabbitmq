@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  postgres-2:
+    image: postgres
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: keycl0ak
+      POSTGRES_USER: keycl0ak
+      POSTGRES_PASSWORD: password
+    ports:
+      - 5433:5432
+    networks:
+      - keycloak_network
+
+  keycloak-2:
+    build:
+      context: ./keycloak-with-rabbitmq
+      dockerfile: Dockerfile
+    environment:
+      - "KEYCLOAK_IMPORT=/opt/jboss/keycloak/imports/realm-export.json"
+      - "KEYCLOAK_ADMIN=admin"
+      - "KEYCLOAK_ADMIN_PASSWORD=admin"
+      - "KC_DB=postgres"
+      - "KC_DB_URL=jdbc:postgresql://localhost:5433/keycl0ak"
+      - "KC_DB_USERNAME=keycl0ak"
+      - "KC_DB_PASSWORD=password"
+    ports:
+      - 8071:8080
+    network_mode: host
+    depends_on:
+      - postgres-2
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    # environment:
+      #  RABBITMQ_DEFAULT_USER: "rabbitmq"
+      #  RABBITMQ_DEFAULT_PASS: "rabbitmq"
+      #  RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-rabbit definitions.import = /etc/rabbitmq/definitions.json"
+    ports:
+      - 5672:5672
+      - 15672:15672
+    volumes:
+      - ./definitions.json:/etc/rabbitmq/definitions.json
+      - ./rabbitmq.conf:/etc/rabbitmq/conf.d/99-config.conf
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - keycloak_network
+
+  receiver-service:
+    build:
+      context: ./RabbitMQRecv # Adjust this path if your Dockerfile is located elsewhere
+      dockerfile: Dockerfile  # Name of your Dockerfile
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      RABBITMQ_HOST: localhost  # Uses RabbitMQ service hostname in Docker network
+      RABBITMQ_PORT: 5672
+    network_mode: host
+
+networks:
+  keycloak_network:
+    driver: bridge
+
