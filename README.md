@@ -6,7 +6,7 @@ Just open the terminal and run the following command (for ubuntu):
 
 Then you  will see the following line in the log on success:
  [*] Waiting for messages. To exit press CTRL+C
-Then open the keycloak on http://localhost:8080, logged in with adming/admin, import the test-realm.json provided inside keycloak-with-rabbitmq/imports.
+Then open the keycloak on http://localhost:8080, logged in with admin/admin, import the test-realm.json provided inside keycloak-with-rabbitmq/imports.
 Then go to Realm Settings -> Events -> add the Event listeners named role-assignment-listener.
 Then assign or unassign any realm roles under a user.
 Then you will see the following 2 lines in the log:
